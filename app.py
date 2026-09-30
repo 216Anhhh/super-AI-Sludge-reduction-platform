@@ -40,7 +40,7 @@ for k, v in {
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ============ 极简 CSS（3 种颜色） ============
+# ============ CSS：Tab浅绿/橙 + 按钮配色 ============
 st.markdown("""
 <style>
 .stApp { background-color: #0e1117; }
@@ -49,7 +49,29 @@ st.markdown("""
 .sub-header { font-size: 1rem; color: #8b949e; text-align: center;
     padding-bottom: 0.8rem; border-bottom: 1px solid #30363d; margin-bottom: 1rem; }
 
-/* ① 主要按钮（亮蓝） */
+/* ===== Tab 按钮：浅绿 → 选中橙色 ===== */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 4px; background: #161b22; padding: 6px;
+    border-radius: 10px; border: 1px solid #30363d;
+}
+.stTabs [data-baseweb="tab"] {
+    background-color: #c8e6c9 !important;
+    color: #1a1a2e !important;
+    border-radius: 8px !important;
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: #a5d6a7 !important;
+}
+.stTabs [aria-selected="true"] {
+    background-color: #ff9800 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(255,152,0,0.5) !important;
+}
+
+/* 主按钮（蓝） */
 .stButton button[kind="primary"] {
     background: #1f6feb !important; color: #ffffff !important;
     font-weight: 600; border: none; border-radius: 6px;
@@ -57,7 +79,7 @@ st.markdown("""
 }
 .stButton button[kind="primary"]:hover { background: #388bfd !important; }
 
-/* ② 次要按钮（绿色） */
+/* 次要按钮（绿） */
 .stButton button[kind="secondary"] {
     background: #238636 !important; color: #ffffff !important;
     font-weight: 600; border: none; border-radius: 6px;
@@ -65,7 +87,7 @@ st.markdown("""
 }
 .stButton button[kind="secondary"]:hover { background: #2ea043 !important; }
 
-/* ③ 下载按钮（淡黄） */
+/* 下载按钮（淡黄） */
 .stDownloadButton button {
     background: #f5e6a3 !important; color: #1a1a2e !important;
     border: 1px solid #e8d5a0 !important; border-radius: 6px !important;
@@ -87,7 +109,6 @@ section[data-testid="stSidebar"] .stTextInput input {
 .stSelectbox div[data-baseweb="select"] div {
     background-color: #1a1a2e !important; color: #f0f6fc !important;
 }
-
 .status-normal { color: #3fb950; font-weight: 700; }
 .status-warning { color: #d29922; font-weight: 700; }
 .status-danger { color: #f85149; font-weight: 700; }
@@ -296,11 +317,48 @@ if st.session_state.predicted and st.session_state.pred_values:
     srts, srtc = gs(psrt, SRT_MIN, SRT_MAX)
     opt = max(SRT_MIN, min(SRT_MAX, (pfm / 15.0) * 12.0))
 
+    # ===== 4 个指标卡（含正常范围） =====
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("预测有机质占比", f"{pfm:.2f}%", fms)
-    c2.metric("预测SVI", f"{psvi:.2f}", svis)
-    c3.metric("预测SRT (天)", f"{psrt:.2f}", srts)
-    c4.metric("推荐最优污泥龄 (天)", f"{opt:.2f}")
+    with c1:
+        st.markdown(f"""
+        <div style="background:#161b22;border-left:4px solid #58a6ff;
+            border-radius:8px;padding:1rem;text-align:center;">
+            <div style="font-size:0.75rem;color:#8b949e;font-weight:600;">🧪 预测有机质占比</div>
+            <div style="font-size:1.8rem;font-weight:700;color:#f0f6fc;margin:4px 0;">{pfm:.2f}%</div>
+            <div><span class="{fmc}">{fms}</span></div>
+            <div style="font-size:0.65rem;color:#8b949e;margin-top:4px;">正常: {FM_MIN}% ~ {FM_MAX}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+        <div style="background:#161b22;border-left:4px solid #f0883e;
+            border-radius:8px;padding:1rem;text-align:center;">
+            <div style="font-size:0.75rem;color:#8b949e;font-weight:600;">📊 预测SVI</div>
+            <div style="font-size:1.8rem;font-weight:700;color:#f0f6fc;margin:4px 0;">{psvi:.2f}</div>
+            <div><span class="{svic}">{svis}</span></div>
+            <div style="font-size:0.65rem;color:#8b949e;margin-top:4px;">正常: {SVI_MIN} ~ {SVI_MAX}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+        <div style="background:#161b22;border-left:4px solid #3fb950;
+            border-radius:8px;padding:1rem;text-align:center;">
+            <div style="font-size:0.75rem;color:#8b949e;font-weight:600;">⏳ 预测SRT</div>
+            <div style="font-size:1.8rem;font-weight:700;color:#f0f6fc;margin:4px 0;">{psrt:.2f} 天</div>
+            <div><span class="{srtc}">{srts}</span></div>
+            <div style="font-size:0.65rem;color:#8b949e;margin-top:4px;">正常: {SRT_MIN} ~ {SRT_MAX} 天</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown(f"""
+        <div style="background:#161b22;border-left:4px solid #d29922;
+            border-radius:8px;padding:1rem;text-align:center;">
+            <div style="font-size:0.75rem;color:#8b949e;font-weight:600;">🌟 推荐最优污泥龄</div>
+            <div style="font-size:1.8rem;font-weight:700;color:#d29922;margin:4px 0;">{opt:.2f} 天</div>
+            <div style="font-size:0.7rem;color:#8b949e;">基于F/M优化</div>
+            <div style="font-size:0.65rem;color:#8b949e;margin-top:4px;">正常: {SRT_MIN} ~ {SRT_MAX} 天</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
     c1, c2 = st.columns([5, 1])
@@ -334,7 +392,7 @@ st.markdown("---")
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "预测分析", "时间序列", "特征重要性", "模型评价", "SHAP解释", "污泥处置减量"])
 
-# ===== Tab 1: 预测分析 =====
+# ===== Tab 1 =====
 with tab1:
     st.markdown("### 🎯 预测结果")
     if st.session_state.predicted:
@@ -374,7 +432,7 @@ with tab1:
     else:
         st.info("请先点击侧边栏'开始预测'")
 
-# ===== Tab 2: 时间序列 =====
+# ===== Tab 2 =====
 with tab2:
     st.markdown("### 📈 时间序列")
     if date_col:
@@ -408,7 +466,7 @@ with tab2:
                                   font=dict(color='white'))
                 st.plotly_chart(fig, use_container_width=True)
 
-# ===== Tab 3: 特征重要性 =====
+# ===== Tab 3 =====
 with tab3:
     st.markdown("### 📊 特征重要性")
     if not st.session_state.model_trained:
@@ -467,7 +525,7 @@ with tab3:
             st.pyplot(fig)
             save_btn(fig, "heatmap.png", "sv_heat")
 
-# ===== Tab 4: 模型评价 =====
+# ===== Tab 4: 模型评价（含小提琴图、箱线图 + 分析） =====
 with tab4:
     st.markdown("### 📉 真实值 vs 预测值")
     if not st.session_state.model_trained:
@@ -522,6 +580,20 @@ with tab4:
                     plt.tight_layout()
                     st.pyplot(fig)
                     save_btn(fig, "all_scatter.png", "sv_all")
+
+                    # ===== 分析文字 =====
+                    st.markdown("---")
+                    st.markdown("#### 📌 散点图分析")
+                    r2s_all = {mn: st.session_state.results[tgt][mk]['r2']
+                               for mk, mn in zip(mkeys, mnames)}
+                    best_model = max(r2s_all, key=r2s_all.get)
+                    st.markdown(f"""
+从四张散点图可以看出，**{best_model}** 模型的预测点最贴近理想对角线（Ideal line），
+R² 达到 **{r2s_all[best_model]:.4f}**，在四个模型中**准确度最高**；
+其余模型预测点分布相对发散，误差偏大。
+综合来看，{best_model} 对 **{y_names_en.get(tgt, tgt)}** 的拟合效果最优，
+推荐作为该指标的预测模型。
+""")
                 else:
                     mnm = {'lr': 'Linear', 'lasso': 'Lasso', 'rf': 'RF', 'xgb': 'XGBoost'}
                     cm = {'lr': '#58a6ff', 'lasso': '#f0883e', 'rf': '#3fb950', 'xgb': '#f85149'}
@@ -552,6 +624,16 @@ with tab4:
                     c2.metric("MSE", f"{mse:.4f}")
                     c3.metric("RMSE", f"{rmse:.4f}")
                     c4.metric("MAE", f"{mae:.4f}")
+
+                    # ===== 分析文字 =====
+                    st.markdown("---")
+                    st.markdown("#### 📌 散点图分析")
+                    st.markdown(f"""
+当前展示的是 **{mnm[mc]}** 模型对 **{y_names_en.get(tgt, tgt)}** 的预测效果，
+R² = **{r2:.4f}**，RMSE = {rmse:.4f}，MAE = {mae:.4f}。
+散点越贴近理想对角线，说明预测值与真实值越接近。
+如需查看四个模型的横向对比，可点击上方"全部模型"按钮。
+""")
 
         st.markdown("---")
         st.markdown("### 📊 各模型性能对比")
@@ -612,6 +694,16 @@ with tab4:
                     plt.tight_layout()
                     st.pyplot(fig)
                     save_btn(fig, "metrics.png", "sv_met_all")
+
+                    st.markdown("---")
+                    st.markdown("#### 📌 模型对比分析")
+                    best_r2 = max(md, key=lambda x: md[x]['r2'])
+                    st.markdown(f"""
+从 R² 和 RMSE 对比图可以看出，**{best_r2}** 模型的 R² 最高（{md[best_r2]['r2']:.4f}），
+RMSE 最小，预测**准确度最高**，拟合效果最好；
+其他模型各有优劣，但整体表现不如 {best_r2}。
+综合各项指标，推荐使用 **{best_r2}** 作为 **{y_names_en.get(tgt, tgt)}** 的主预测模型。
+""")
                 else:
                     mnames = {'r2': 'R²', 'mse': 'MSE', 'rmse': 'RMSE', 'mae': 'MAE'}
                     vs = [md[m][mt] for m in mn]
@@ -634,9 +726,111 @@ with tab4:
                     st.pyplot(fig)
                     save_btn(fig, f"{mnames[mt]}.png", "sv_met_s")
                     bi = np.argmax(vs) if mt == 'r2' else np.argmin(vs)
-                    st.success(f"**{mn[bi]}** 的 {mnames[mt]} "
-                               f"{'最高' if mt == 'r2' else '最小'} ({vs[bi]:.4f})")
+                    st.markdown("---")
+                    st.markdown("#### 📌 分析")
+                    st.markdown(f"""
+在 **{mnames[mt]}** 指标下，**{mn[bi]}** 模型表现最优（{vs[bi]:.4f}），
+{"R² 越接近 1 表示拟合越好" if mt == 'r2' else "误差越小表示预测越准确"}。
+""")
 
+        # ===== 小提琴图 =====
+        st.markdown("---")
+        st.markdown("### 🎻 小提琴图 - 数据分布")
+        tv = st.selectbox("选择变量查看小提琴图",
+                          available_y + available_X[:4],
+                          format_func=lambda x: y_names_cn.get(x, x) if x in y_names_cn else x_names_cn.get(x, x),
+                          key='violin')
+        if st.button("📊 生成小提琴图", key="gen_violin"):
+            st.session_state.show_violin = True
+            st.session_state.violin_params = {'target': tv}
+            st.rerun()
+        if st.session_state.show_violin and st.session_state.violin_params:
+            tv = st.session_state.violin_params.get('target')
+            if tv:
+                fig, ax = plt.subplots(figsize=(9, 4))
+                data = y_data[tv] if tv in y_data.columns else X_data[tv]
+                title = y_names_en.get(tv, tv) if tv in y_data.columns else x_names_en.get(tv, tv)
+                parts = ax.violinplot(data, positions=[1], showmeans=True, showmedians=True)
+                for pc in parts['bodies']:
+                    pc.set_facecolor('#58a6ff')
+                    pc.set_alpha(0.7)
+                ax.set_title(f'{title} Violin Plot', color=PLOT_TEXT, fontweight='bold')
+                ax.set_ylabel(title, color=PLOT_TEXT)
+                ax.set_xticks([1])
+                ax.set_xticklabels([title], color=PLOT_TEXT)
+                ax.grid(True, alpha=0.2)
+                ax.set_facecolor(PLOT_FACE)
+                fig.patch.set_facecolor(PLOT_FACE)
+                ax.tick_params(colors=PLOT_TEXT)
+                plt.tight_layout()
+                st.pyplot(fig)
+                save_btn(fig, "violin.png", f"sv_v_{tv}")
+
+                st.markdown("#### 📌 分析")
+                mean_v = float(np.mean(data))
+                median_v = float(np.median(data))
+                st.markdown(f"""
+小提琴图显示了 **{title}** 的数据分布情况。
+均值约为 **{mean_v:.2f}**，中位数约为 **{median_v:.2f}**。
+分布越集中，说明运行越稳定；分布越分散，说明波动越大。
+""")
+
+        # ===== 箱线图 =====
+        st.markdown("---")
+        st.markdown("### 📦 箱线图 - 各模型误差分布对比")
+        bm = st.selectbox("Select Target Variable", ['F/M(%)', 'SVI'], key='box_m')
+        if st.button("📊 生成箱线图", key="gen_box"):
+            st.session_state.show_box = True
+            st.session_state.box_params = {'metric': bm}
+            st.rerun()
+        if st.session_state.show_box and st.session_state.box_params:
+            bm = st.session_state.box_params.get('metric')
+            if bm:
+                mn_b = ['Linear', 'Lasso', 'RF', 'XGB']
+                mk_b = ['lr', 'lasso', 'rf', 'xgb']
+                errors, vms = [], []
+                for n, k in zip(mn_b, mk_b):
+                    try:
+                        yt = st.session_state.models[bm]['y_test']
+                        yp = st.session_state.models[bm][k].predict(
+                            st.session_state.models[bm]['X_test'])
+                        errors.append(np.abs(yt - yp))
+                        vms.append(n)
+                    except:
+                        continue
+                if errors:
+                    fig, ax = plt.subplots(figsize=(9, 5))
+                    box = ax.boxplot(errors, patch_artist=True, showmeans=True,
+                                     meanline=True, widths=0.6)
+                    ax.set_xticklabels(vms, color=PLOT_TEXT)
+                    cb = ['#58a6ff', '#f0883e', '#3fb950', '#f85149']
+                    for p, c in zip(box['boxes'], cb[:len(errors)]):
+                        p.set_facecolor(c)
+                        p.set_alpha(0.7)
+                    for f in box['fliers']:
+                        f.set(marker='o', color='#f85149', markersize=6)
+                    md = 'F/M Ratio' if bm == 'F/M(%)' else 'SVI'
+                    ax.set_xlabel('Model', color=PLOT_TEXT, fontweight='bold')
+                    ax.set_ylabel('Absolute Error', color=PLOT_TEXT, fontweight='bold')
+                    ax.set_title(f'{md} - Model Error Distribution',
+                                 color=PLOT_TEXT, fontweight='bold')
+                    ax.grid(True, alpha=0.3)
+                    ax.set_facecolor(PLOT_FACE)
+                    fig.patch.set_facecolor(PLOT_FACE)
+                    ax.tick_params(colors=PLOT_TEXT)
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    save_btn(fig, "boxplot.png", "sv_b")
+
+                    st.markdown("#### 📌 分析")
+                    mean_errors = {n: np.mean(e) for n, e in zip(vms, errors)}
+                    best = min(mean_errors, key=mean_errors.get)
+                    st.markdown(f"""
+箱线图对比了四个模型在 **{md}** 预测中的误差分布。
+箱体越窄、中位线越低，说明该模型误差越小、越稳定。
+从图中看，**{best}** 模型的平均绝对误差最小（{mean_errors[best]:.4f}），
+预测**准确度最高**，是 {md} 预测的最优模型。
+""")
 # ===== Tab 5: SHAP =====
 with tab5:
     st.markdown("### 🔍 SHAP 模型解释")
@@ -749,7 +943,15 @@ with tab6:
     st.pyplot(fig)
     save_btn(fig, "sludge_reduction.png", "sv_sr")
 
-    # ===== 预期效益 =====
+    st.markdown("#### 📌 分析")
+    st.markdown(f"""
+上图展示了污泥从原始状态到干化后的全流程减量效果。
+原始污泥量为 **{tf:.0f} t/d**，经浓缩、脱水、干化后降至 **{dro:.1f} t/d**，
+全流程**总减量率达到 {total_r:.2f}%**。
+其中浓缩环节减量率 {tr:.1f}%，脱水环节 {dr:.1f}%，干化环节 {drr:.1f}%，
+说明干化环节对体积削减贡献最大。
+""")
+
     st.markdown("---")
     st.markdown("### 💰 预期效益")
     c1, c2 = st.columns(2)
@@ -769,7 +971,15 @@ with tab6:
     c3.metric("总经济效益", f"{tsc:.0f} 元/d")
     st.metric("碳排放减少", f"{se:.1f} kg CO₂/d")
 
-    # ===== 最终处置建议 =====
+    st.markdown("#### 📌 效益分析")
+    st.markdown(f"""
+经全流程减量处理后，每日可减少污泥外运量 **{sm:.1f} 吨**，
+按照当前运输与处置单价估算，每日可节省运输与处置成本约 **{tsc:.0f} 元**，
+减少碳排放约 **{se:.1f} kg CO₂**。
+按年运行 365 天计算，年经济效益可达约 **{tsc*365/10000:.1f} 万元**，
+对实现污泥减量化、降低运行成本、助力碳减排具有显著意义。
+""")
+
     st.markdown("---")
     st.markdown("### 💡 最终处置建议")
     if drw < 30:
@@ -779,7 +989,6 @@ with tab6:
     else:
         st.error(f"干化后含水率 {drw:.1f}% 偏高，建议加强脱水或采用堆肥/土地利用")
 
-    # ===== 🌱 污泥资源化利用建议（新增） =====
     st.markdown("---")
     st.markdown("#### 🌱 污泥资源化利用建议")
     st.markdown("""
