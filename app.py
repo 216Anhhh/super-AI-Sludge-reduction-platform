@@ -519,6 +519,17 @@ with tab3:
             sns.heatmap(corr, annot=True, cmap='coolwarm', center=0, fmt='.2f',
                         square=True, linewidths=0.5, ax=ax, cbar_kws={'shrink': 0.8})
             ax.set_title('Feature Correlation Heatmap', color=PLOT_TEXT, fontweight='bold')
+
+            # ⭐ 关键修改：横纵坐标标签改为白色 ⭐
+            ax.tick_params(axis='x', colors='white', labelsize=9)
+            ax.tick_params(axis='y', colors='white', labelsize=9)
+            plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='white')
+            plt.setp(ax.get_yticklabels(), color='white')
+            # 颜色条（colorbar）刻度文字改白
+            cbar = ax.collections[0].colorbar
+            cbar.ax.yaxis.set_tick_params(color='white')
+            plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='white')
+
             ax.set_facecolor(PLOT_FACE)
             fig.patch.set_facecolor(PLOT_FACE)
             plt.tight_layout()
